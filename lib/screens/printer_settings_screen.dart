@@ -1198,6 +1198,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
         MediaQuery.of(context).orientation == Orientation.portrait;
 
     return Container(
+      alignment: Alignment.topCenter,
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
         border: isPortrait
