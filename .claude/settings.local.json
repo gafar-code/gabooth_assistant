@@ -3,7 +3,8 @@
     "allow": [
       "Bash(python3 -c \":*)",
       "Bash(dart run:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(grep -i \"\\\\.dart$\")"
     ]
   }
 }
