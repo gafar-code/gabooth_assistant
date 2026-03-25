@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/printer_settings_screen.dart';
+import 'screens/server_screen.dart';
 import 'services/database_service.dart';
 
 void main() async {
@@ -62,6 +63,25 @@ class HomePage extends StatelessWidget {
               },
               icon: const Icon(Icons.tune_rounded),
               label: const Text('Printer Settings'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ServerScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.lan_rounded),
+              label: const Text('Print Server'),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,

@@ -51,6 +51,13 @@ dependencies:
   pdf: ^3.11.3
   pdfx: ^2.8.0
 
+  # HTTP Server (print server)
+  shelf: ^1.4.0
+  shelf_router: ^1.1.4
+
+  # QR Code generation
+  qr_flutter: ^4.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
