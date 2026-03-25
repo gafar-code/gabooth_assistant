@@ -1,0 +1,128 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:5043545730990758507",
+      "lastPropertyId": "9:182628850892559996",
+      "name": "PrinterDevice",
+      "properties": [
+        {
+          "id": "1:6374545950572985942",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3762861479175685541",
+          "name": "printerName",
+          "type": 9
+        },
+        {
+          "id": "3:1243313015728898457",
+          "name": "printerType",
+          "type": 9
+        },
+        {
+          "id": "4:2424533090471855793",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "5:154371660968505114",
+          "name": "isDefault",
+          "type": 1
+        },
+        {
+          "id": "6:539833325422976193",
+          "name": "isOnline",
+          "type": 1
+        },
+        {
+          "id": "7:4425968147713875553",
+          "name": "lastDetected",
+          "type": 10
+        },
+        {
+          "id": "8:3503819631298620264",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "9:182628850892559996",
+          "name": "updatedAt",
+          "type": 10
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:7348221204909642677",
+      "lastPropertyId": "9:8907243517727938760",
+      "name": "PrinterSettings",
+      "properties": [
+        {
+          "id": "1:3155084742970970310",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5642145753721959110",
+          "name": "key",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "1:3658789596920691935"
+        },
+        {
+          "id": "3:8747308591537297273",
+          "name": "targetWidthMm",
+          "type": 8
+        },
+        {
+          "id": "4:8020136484404097469",
+          "name": "targetHeightMm",
+          "type": 8
+        },
+        {
+          "id": "5:8044248964809771250",
+          "name": "offsetXMm",
+          "type": 8
+        },
+        {
+          "id": "6:2535800298697913033",
+          "name": "offsetYMm",
+          "type": 8
+        },
+        {
+          "id": "7:1859202890250329246",
+          "name": "scalePercent",
+          "type": 8
+        },
+        {
+          "id": "8:9178454792200072193",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "9:8907243517727938760",
+          "name": "updatedAt",
+          "type": 10
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "2:7348221204909642677",
+  "lastIndexId": "1:3658789596920691935",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}
