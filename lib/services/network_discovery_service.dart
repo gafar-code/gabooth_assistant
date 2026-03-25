@@ -26,11 +26,19 @@ class NetworkDiscoveryService {
   bool get isRunning => _socket != null;
 
   /// Start broadcasting server presence.
+  ///
+  /// Binds the UDP socket to [localIp] so the broadcast goes out through
+  /// the correct LAN interface (not a virtual adapter like Hyper-V/WSL).
   Future<bool> start({required String localIp, required int serverPort}) async {
     if (_socket != null) return true;
 
     try {
-      _socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+      // Bind to the specific LAN IP so broadcast exits through the right
+      // network interface instead of a virtual adapter.
+      _socket = await RawDatagramSocket.bind(
+        InternetAddress(localIp),
+        0,
+      );
       _socket!.broadcastEnabled = true;
 
       final payload = jsonEncode({
@@ -41,8 +49,13 @@ class NetworkDiscoveryService {
       });
       final data = utf8.encode(payload);
 
+      // Compute subnet broadcast address (assume /24 → x.x.x.255)
+      final subnetBroadcast = _subnetBroadcast(localIp);
+
       _timer = Timer.periodic(broadcastInterval, (_) {
         try {
+          // Send to both subnet broadcast and global broadcast for maximum reach
+          _socket?.send(data, InternetAddress(subnetBroadcast), discoveryPort);
           _socket?.send(data, InternetAddress('255.255.255.255'), discoveryPort);
         } catch (e) {
           Logger.w('[DISCOVERY] Broadcast error: $e');
@@ -50,15 +63,28 @@ class NetworkDiscoveryService {
       });
 
       // Send the first broadcast immediately
+      _socket!.send(data, InternetAddress(subnetBroadcast), discoveryPort);
       _socket!.send(data, InternetAddress('255.255.255.255'), discoveryPort);
 
-      Logger.i('[DISCOVERY] Broadcasting on UDP port $discoveryPort every ${broadcastInterval.inSeconds}s');
+      Logger.i('[DISCOVERY] Broadcasting on UDP port $discoveryPort every '
+          '${broadcastInterval.inSeconds}s (bound to $localIp, '
+          'broadcast to $subnetBroadcast)');
       return true;
     } catch (e) {
       Logger.e('[DISCOVERY] Failed to start broadcast', e);
       _socket = null;
       return false;
     }
+  }
+
+  /// Compute subnet broadcast address assuming /24 mask.
+  /// e.g. 192.168.1.100 → 192.168.1.255
+  static String _subnetBroadcast(String ip) {
+    final parts = ip.split('.');
+    if (parts.length == 4) {
+      return '${parts[0]}.${parts[1]}.${parts[2]}.255';
+    }
+    return '255.255.255.255';
   }
 
   /// Stop broadcasting.
