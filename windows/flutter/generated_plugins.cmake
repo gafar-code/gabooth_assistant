@@ -3,10 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  objectbox_flutter_libs
-  pdfx
   print_windows
-  printing
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

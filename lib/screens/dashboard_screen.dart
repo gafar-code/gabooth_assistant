@@ -6,8 +6,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../models/print_job.dart';
 import '../providers/print_server_provider.dart';
 
-import 'printer_settings_screen.dart';
-
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -58,20 +56,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             error: (e, s) => const SizedBox.shrink(),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const PrinterSettingsScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.settings_rounded),
-            tooltip: 'Printer Settings',
-          ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 16),
         ],
       ),
       body: serverAsync.when(

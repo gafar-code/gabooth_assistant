@@ -36,20 +36,12 @@ dependencies:
   # State management
   flutter_riverpod: ^2.6.1
 
-  # Database
-  objectbox: 4.1.0
-  objectbox_flutter_libs: any
+  # File system paths (logger output dir)
   path_provider: ^2.1.4
-  path: ^1.9.1
 
-  # Printing support
-  printing: ^5.13.4
+  # Printing support — Windows-only printer driver bridge
   print_windows:
     path: ../print_windows
-
-  # PDF generation and viewing
-  pdf: ^3.11.3
-  pdfx: ^2.8.0
 
   # HTTP Server (print server)
   shelf: ^1.4.0
@@ -64,9 +56,8 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
 
-  # Code generation
-  build_runner: 2.4.13
-  objectbox_generator: 4.1.0
+  # Launcher icon generator
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,9 +69,6 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
-  assets:
-    - assets/pdf/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -107,3 +95,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Flutter Launcher Icons Configuration
+flutter_launcher_icons:
+  windows:
+    generate: true
+    image_path: "icon.png"
+    icon_size: 256

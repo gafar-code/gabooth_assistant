@@ -7,10 +7,8 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
 import '../models/print_job.dart';
-import '../models/printer_settings.dart';
 import 'logger_service.dart';
 import 'printer_service.dart';
-import 'printer_settings_repository.dart';
 
 typedef OnPrintJobCallback = void Function(PrintJob job);
 
@@ -82,12 +80,19 @@ class PrintServerService {
       // ── POST /print ────────────────────────────────────────────
       // Client sends:
       //   Content-Type: application/octet-stream  (raw PDF bytes in body)
-      //   Headers (all optional):
-      //     X-Printer-Name  : specific printer name
-      //     X-Printer-Type  : 'strip'|'kolase'|'majalah'|'flipbook'|'thermal'
-      //     X-Copies        : integer (default 1)
-      //     X-Job-Name      : display name for the job
-      //     X-File-Name     : original filename
+      //   Headers:
+      //     X-Printer-Name      : nama printer (wajib, atau pakai default)
+      //     X-Paper-Width-Mm    : lebar kertas mm — diteruskan ke DEVMODE
+      //     X-Paper-Height-Mm   : tinggi kertas mm — diteruskan ke DEVMODE
+      //     X-Printer-Type      : metadata kategori (untuk tampilan saja)
+      //     X-Copies            : integer (default 1)
+      //     X-Job-Name          : display name untuk antrian print
+      //     X-File-Name         : nama file asli
+      //     X-Target-Width-Mm   : lebar konten cetak (kalibrasi, 0 = full)
+      //     X-Target-Height-Mm  : tinggi konten cetak (kalibrasi, 0 = full)
+      //     X-Offset-X-Mm       : offset horizontal mm (kalibrasi, default 0)
+      //     X-Offset-Y-Mm       : offset vertikal mm (kalibrasi, default 0)
+      //     X-Scale-Percent     : scale persen (kalibrasi, default 100)
       router.post('/print', (Request req) async {
         try {
           // Read PDF bytes
@@ -109,6 +114,20 @@ class PrintServerService {
           final copies = int.tryParse(headers['x-copies'] ?? '1') ?? 1;
           final jobName = headers['x-job-name'] ?? 'Remote Print';
           final fileName = headers['x-file-name'] ?? 'document.pdf';
+          final paperWidthMm =
+              double.tryParse(headers['x-paper-width-mm'] ?? '') ?? 0.0;
+          final paperHeightMm =
+              double.tryParse(headers['x-paper-height-mm'] ?? '') ?? 0.0;
+          final targetWidthMm =
+              double.tryParse(headers['x-target-width-mm'] ?? '') ?? 0.0;
+          final targetHeightMm =
+              double.tryParse(headers['x-target-height-mm'] ?? '') ?? 0.0;
+          final offsetXMm =
+              double.tryParse(headers['x-offset-x-mm'] ?? '') ?? 0.0;
+          final offsetYMm =
+              double.tryParse(headers['x-offset-y-mm'] ?? '') ?? 0.0;
+          final scalePercent =
+              double.tryParse(headers['x-scale-percent'] ?? '') ?? 100.0;
 
           // Resolve printer name
           final printerName = requestedPrinterName ?? defaultPrinterName;
@@ -121,23 +140,26 @@ class PrintServerService {
                 headers: _jsonHeaders);
           }
 
-          // Load calibration settings for printer type
-          PrinterSettings? printerSettings;
-          if (printerType != null && printerType.isNotEmpty) {
-            printerSettings = await PrinterSettingsRepository().getSettingsByType(printerType);
-          }
-          printerSettings ??= await PrinterSettingsRepository().getDefaultSettings();
+          Logger.i(
+            '[SERVER] Print job received: $fileName → $printerName '
+            '($printerType) $paperWidthMm×${paperHeightMm}mm ×$copies '
+            'target=$targetWidthMm×${targetHeightMm}mm '
+            'offset=($offsetXMm,$offsetYMm)mm scale=$scalePercent%',
+          );
 
-          Logger.i('[SERVER] Print job received: $fileName → $printerName ($printerType) ×$copies');
-
-          // Execute print
+          // Execute print — paper size + kalibrasi diteruskan ke print_windows.
           final success = await PrinterService.instance.printDocument(
             printerName: printerName,
             documentData: Uint8List.fromList(bytes),
             jobName: jobName,
             copies: copies,
-            printerSettings: printerSettings,
-            printerType: printerType,
+            paperWidthMm: paperWidthMm,
+            paperHeightMm: paperHeightMm,
+            targetWidthMm: targetWidthMm,
+            targetHeightMm: targetHeightMm,
+            offsetXMm: offsetXMm,
+            offsetYMm: offsetYMm,
+            scalePercent: scalePercent,
           );
 
           final job = PrintJob(
@@ -281,7 +303,7 @@ class PrintServerService {
   static const Map<String, String> _corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Printer-Name, X-Printer-Type, X-Copies, X-Job-Name, X-File-Name',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Printer-Name, X-Printer-Type, X-Copies, X-Job-Name, X-File-Name, X-Paper-Width-Mm, X-Paper-Height-Mm',
   };
 
   /// Add Windows Firewall inbound rules for the HTTP server (TCP) and
