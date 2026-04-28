@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/outputs/
 
 # Symbolication related
 app.*.symbols
