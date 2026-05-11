@@ -7,6 +7,27 @@
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  // Single instance check using a named mutex.
+  // If another instance is already running, bring it to foreground and exit.
+  HANDLE hMutex = ::CreateMutexW(nullptr, FALSE, L"GaboothAssistant_SingleInstance");
+  if (hMutex == nullptr || ::GetLastError() == ERROR_ALREADY_EXISTS) {
+    // Another instance is running - find its window and bring to foreground.
+    // The window may be hidden in the tray, so force-show it as well.
+    HWND existingWindow = ::FindWindowW(nullptr, L"Gabooth Assistant");
+    if (existingWindow != nullptr) {
+      if (::IsIconic(existingWindow)) {
+        ::ShowWindow(existingWindow, SW_RESTORE);
+      } else {
+        ::ShowWindow(existingWindow, SW_SHOW);
+      }
+      ::SetForegroundWindow(existingWindow);
+    }
+    if (hMutex != nullptr) {
+      ::CloseHandle(hMutex);
+    }
+    return EXIT_SUCCESS;
+  }
+
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
@@ -39,5 +60,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
 
   ::CoUninitialize();
+  ::ReleaseMutex(hMutex);
+  ::CloseHandle(hMutex);
   return EXIT_SUCCESS;
 }
