@@ -39,6 +39,15 @@ dependencies:
   # File system paths (logger output dir)
   path_provider: ^2.1.4
 
+  # Local key-value storage (per-printer calibration)
+  shared_preferences: ^2.3.2
+
+  # PDF generation (on-the-fly calibration test page)
+  pdf: ^3.11.3
+
+  # PDF preview rendering in printer calibration screen
+  pdfx: ^2.6.0
+
   # Printing support — Windows-only printer driver bridge
   print_windows:
     path: ../print_windows

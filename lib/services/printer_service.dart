@@ -19,6 +19,20 @@ class PrinterService {
 
   static final print_win.PrintWindows _printWindows = print_win.PrintWindows();
 
+  /// Enumerate paper sizes advertised by the printer's driver.
+  /// Empty list = driver does not expose any (rare; some virtual printers).
+  Future<List<print_win.DriverPaperSize>> listPaperSizes(
+    String printerName,
+  ) async {
+    if (printerName.isEmpty) return const [];
+    try {
+      return await _printWindows.listPaperSizes(printerName);
+    } catch (e, st) {
+      Logger.w('[PRINTER] listPaperSizes failed for "$printerName"', e, st);
+      return const [];
+    }
+  }
+
   Future<List<PrinterDevice>> getAvailablePrinters() async {
     try {
       final printers = await _printWindows.listPrinters();

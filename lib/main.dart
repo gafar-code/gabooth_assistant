@@ -6,12 +6,16 @@ import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'screens/dashboard_screen.dart';
+import 'services/printer_calibration_repository.dart';
 
 const String _trayIconPath = 'assets/icons/tray_icon.ico';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
+  // Preload per-printer calibrations so the HTTP /print handler can read
+  // them synchronously on every request.
+  await PrinterCalibrationRepository.instance.ensureLoaded();
 
   const windowOptions = WindowOptions(
     size: Size(900, 600),

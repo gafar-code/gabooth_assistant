@@ -8,6 +8,7 @@ import 'package:shelf_router/shelf_router.dart';
 
 import '../models/print_job.dart';
 import 'logger_service.dart';
+import 'printer_calibration_repository.dart';
 import 'printer_service.dart';
 
 typedef OnPrintJobCallback = void Function(PrintJob job);
@@ -88,11 +89,10 @@ class PrintServerService {
       //     X-Copies            : integer (default 1)
       //     X-Job-Name          : display name untuk antrian print
       //     X-File-Name         : nama file asli
-      //     X-Target-Width-Mm   : lebar konten cetak (kalibrasi, 0 = full)
-      //     X-Target-Height-Mm  : tinggi konten cetak (kalibrasi, 0 = full)
-      //     X-Offset-X-Mm       : offset horizontal mm (kalibrasi, default 0)
-      //     X-Offset-Y-Mm       : offset vertikal mm (kalibrasi, default 0)
-      //     X-Scale-Percent     : scale persen (kalibrasi, default 100)
+      //
+      // Calibration headers (X-Target-*, X-Offset-*, X-Scale-Percent) DI-LOG
+      // saja untuk debug. Nilai sebenarnya yang dipakai diambil dari local
+      // PrinterCalibrationRepository, di-lookup pakai printer name.
       router.post('/print', (Request req) async {
         try {
           // Read PDF bytes
@@ -118,15 +118,18 @@ class PrintServerService {
               double.tryParse(headers['x-paper-width-mm'] ?? '') ?? 0.0;
           final paperHeightMm =
               double.tryParse(headers['x-paper-height-mm'] ?? '') ?? 0.0;
-          final targetWidthMm =
+
+          // Client may still send calibration headers, but we ignore the
+          // values — they're parsed only so we can log them for debugging.
+          final clientTargetWidthMm =
               double.tryParse(headers['x-target-width-mm'] ?? '') ?? 0.0;
-          final targetHeightMm =
+          final clientTargetHeightMm =
               double.tryParse(headers['x-target-height-mm'] ?? '') ?? 0.0;
-          final offsetXMm =
+          final clientOffsetXMm =
               double.tryParse(headers['x-offset-x-mm'] ?? '') ?? 0.0;
-          final offsetYMm =
+          final clientOffsetYMm =
               double.tryParse(headers['x-offset-y-mm'] ?? '') ?? 0.0;
-          final scalePercent =
+          final clientScalePercent =
               double.tryParse(headers['x-scale-percent'] ?? '') ?? 100.0;
 
           // Resolve printer name
@@ -140,14 +143,20 @@ class PrintServerService {
                 headers: _jsonHeaders);
           }
 
+          // Local calibration is keyed by printer name. Missing entry =
+          // PrinterCalibration.zero() (no-op = old default behavior).
+          final localCal =
+              PrinterCalibrationRepository.instance.getSync(printerName);
+
           Logger.i(
             '[SERVER] Print job received: $fileName → $printerName '
             '($printerType) $paperWidthMm×${paperHeightMm}mm ×$copies '
-            'target=$targetWidthMm×${targetHeightMm}mm '
-            'offset=($offsetXMm,$offsetYMm)mm scale=$scalePercent%',
+            'client_calibration=target=${clientTargetWidthMm}x${clientTargetHeightMm}mm '
+            'offset=($clientOffsetXMm,$clientOffsetYMm)mm scale=$clientScalePercent% '
+            '[IGNORED] | local_calibration=$localCal',
           );
 
-          // Execute print — paper size + kalibrasi diteruskan ke print_windows.
+          // Execute print — paper size dari client, kalibrasi dari local repo.
           final success = await PrinterService.instance.printDocument(
             printerName: printerName,
             documentData: Uint8List.fromList(bytes),
@@ -155,11 +164,11 @@ class PrintServerService {
             copies: copies,
             paperWidthMm: paperWidthMm,
             paperHeightMm: paperHeightMm,
-            targetWidthMm: targetWidthMm,
-            targetHeightMm: targetHeightMm,
-            offsetXMm: offsetXMm,
-            offsetYMm: offsetYMm,
-            scalePercent: scalePercent,
+            targetWidthMm: localCal.targetWidthMm,
+            targetHeightMm: localCal.targetHeightMm,
+            offsetXMm: localCal.offsetXMm,
+            offsetYMm: localCal.offsetYMm,
+            scalePercent: localCal.scalePercent,
           );
 
           final job = PrintJob(

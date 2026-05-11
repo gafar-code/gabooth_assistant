@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../models/print_job.dart';
 import '../providers/print_server_provider.dart';
+import 'printer_settings_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -42,6 +43,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Printer calibration',
+            icon: Icon(Icons.tune_rounded, color: colorScheme.onSurfaceVariant),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PrinterSettingsScreen(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
           serverAsync.when(
             data: (state) => _ServerToggleButton(state: state),
             loading: () => const Padding(
