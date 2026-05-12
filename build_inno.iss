@@ -8,7 +8,7 @@
 ; - Cleans %APPDATA%\GaboothAssistant on uninstall (matches logger path).
 
 #define MyAppName "Gabooth Assistant"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Gabooth"
 #define MyAppURL "https://gabooth.com"
 #define MyAppExeName "gabooth_assistant.exe"
